@@ -26,8 +26,7 @@ class User(Base):
 class Subject(Base):
     __tablename__ = 'subjects'
 
-    id = Column(Integer, primary_key=True, index=True)
-    title = Column(String, index=True, unique=True)
+    title = Column(String, index=True, unique=True, primary_key=True)
     description = Column(String)
 
     users = relationship('User', back_populates='subjects', secondary='user_subjects')
@@ -36,10 +35,10 @@ class Subject(Base):
 
 class UserSubject(Base):
     __tablename__ = 'user_subjects'
-    __table_args__ = (PrimaryKeyConstraint('user_id', 'subject_id'),)
+    __table_args__ = (PrimaryKeyConstraint('user_id', 'subject_title'),)
 
     user_id = Column(Integer, ForeignKey('users.id', ondelete='CASCADE'))
-    subject_id = Column(Integer, ForeignKey('subjects.id', ondelete='CASCADE'))
+    subject_title = Column(String, ForeignKey('subjects.title', ondelete='CASCADE'))
 
 
 class Lesson(Base):
@@ -50,7 +49,7 @@ class Lesson(Base):
     description = Column(String)
     record = Column(String)
     homework = Column(String)
-    subject_id = Column(Integer, ForeignKey("subjects.id", ondelete='CASCADE'))
+    subject_title = Column(String, ForeignKey("subjects.title", ondelete='CASCADE'))
 
     subject = relationship('Subject', back_populates='lessons')
     results = relationship('Results', back_populates='lesson')
@@ -64,7 +63,7 @@ class Results(Base):
     lesson_id = Column(Integer, ForeignKey('lessons.id', ondelete='CASCADE'))
 
     homework = Column(String)
-    homework_score = Column(Float)
+    homework_score = Column(Float, default=0)
     progress = Column(Float, default=0)
 
     lesson = relationship('Lesson', back_populates='results')

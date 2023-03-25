@@ -24,3 +24,13 @@ REG_ERROR = fastapi.HTTPException(
     status_code=fastapi.status.HTTP_400_BAD_REQUEST,
     detail="This email is already in use"
 )
+
+SUBJECT_NOT_FOUNT_ERROR = fastapi.HTTPException(
+    status_code=fastapi.status.HTTP_400_BAD_REQUEST,
+    detail="The item with this id was not found"
+)
+
+SUBJECT_NOT_UNIQUE_ERROR = fastapi.HTTPException(
+    status_code=fastapi.status.HTTP_400_BAD_REQUEST,
+    detail="The name is not unique"
+)

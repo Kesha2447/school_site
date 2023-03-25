@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from fastapi import HTTPException
 from datetime import datetime
 from sqlalchemy.orm import Session
 
@@ -56,8 +57,8 @@ class SubjectCrud:
     '''A class for storing database operations related to school subjects'''
 
     @staticmethod
-    def get(db: Session, subject_id: int):
-        return db.query(db_models.Subject).filter(db_models.Subject.id == subject_id).first()
+    def get(db: Session, subject_title: str):
+        return db.query(db_models.Subject).filter(db_models.Subject.title == subject_title).first()
 
 
     @staticmethod
@@ -68,7 +69,7 @@ class SubjectCrud:
     @staticmethod
     def create(db: Session, subject: lessons.SubjectCreate):
         subject_dict = subject.dict()
-        db_subject = db_models.User(**subject_dict)
+        db_subject = db_models.Subject(**subject_dict)
         db.add(db_subject)
         db.commit()
         db.refresh(db_subject)
@@ -78,48 +79,79 @@ class SubjectCrud:
     @staticmethod
     def update(db: Session, subject: lessons.SubjectCreate):
         return SubjectCrud.create(db, subject)
-
+    
+    
+    @staticmethod
+    def delete(db: Session, subject_title: str):
+        i = db.query(db_models.Subject).filter(db_models.Subject.title == subject_title).first()
+        db.delete(i)
+        db.commit()        
+        
 
 class LessonCrud:
     '''A class for storing database operations related to lessons'''
 
     @staticmethod
-    def get(db: Session, user_id: int):
-        pass
+    def get(db: Session, lesson_id: int):
+        return db.query(db_models.Lesson).filter(db_models.Lesson.id == lesson_id).first()
 
 
     @staticmethod
-    def get_all(db: Session, skip: int = 0, limit: int = 100):
-        pass
+    def get_all(db: Session, subject: str, skip: int = 0, limit: int = 100):
+        return db.query(db_models.Lesson).filter(db_models.Lesson.subject_title == subject).order_by(db_models.Lesson.title).offset(skip).limit(limit).all()
 
 
     @staticmethod
-    def create(db: Session, user: users.UserCreate):
-        pass
+    def create(db: Session, lesson: lessons.LessonCreate):
+        lesson_dict = lesson.dict()
+            
+        db_lesson = db_models.Lesson(**lesson_dict)
+        db.add(db_lesson)
+        db.commit()
+        db.refresh(db_lesson)
+        return db_lesson
+
 
     @staticmethod
-    def update():
-        pass
+    def update(db: Session, lesson_id: int, column_name, data):
+        db.query(db_models.Lesson).filter(db_models.Lesson.id == lesson_id).update({column_name: data})
+        db.commit()
+    
+    
+    @staticmethod
+    def delete(db: Session, lesson_id: int):
+        i = db.query(db_models.Lesson).filter(db_models.Lesson.id == lesson_id).first()
+        db.delete(i)
+        db.commit()
 
 
 class ResultCrud:
     '''A class for storing user-related database operations'''
 
     @staticmethod
-    def get_user(db: Session, user_id: int):
-        pass
+    def get(db: Session, user_id: int, lesson_id: int):
+        return db.query(db_models.Results).filter(db_models.Results.user_id == user_id, db_models.Results.lesson_id == lesson_id).first()
 
 
     @staticmethod
-    def get_users(db: Session, skip: int = 0, limit: int = 100):
-        pass
+    def get_all(db: Session, user_id: int, skip: int = 0, limit: int = 100):
+        return db.query(db_models.Results).filter(db_models.Results.user_id == user_id).offset(skip).limit(limit).all()
 
 
     @staticmethod
-    def create_user(db: Session, user: users.UserCreate):
-        pass
-
+    def create(db: Session, result: lessons.Result):
+        result_dict = result.dict()
+        db_result = db_models.Results(**result_dict)
+        db.add(db_result)
+        db.commit()
+        db.refresh(db_result)
+        return db_result
+    
+    
     @staticmethod
-    def update_user():
-        pass
+    def update(db: Session, result_id: int, column_name, data):
+        db.query(db_models.Results).filter(db_models.Results.id == result_id).update({column_name: data})
+        db.commit()    
+
+
 

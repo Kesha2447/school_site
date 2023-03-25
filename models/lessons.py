@@ -37,13 +37,16 @@ class Lesson(LessonBase):
 
 
 #Result
-class Result(BaseModel):
+class ResultCreate(BaseModel):
     user_id: int
-    lesson_id: int
+    lesson_id: int    
+
+
+class Result(ResultCreate):
     homework: Union[str, None] = None
     homework_score: int = Field(le=5, ge=0, default=0)
-    progress: float = Field(le=100, ge=0, default=0)
-
+    progress: float = Field(le=100, ge=0, default=0)    
+    
     class Config:
         orm_mode = True
 

@@ -3,7 +3,7 @@
 
 from datetime import timedelta
 
-from fastapi import Depends, APIRouter
+from fastapi import Depends, APIRouter, Response
 from fastapi.security import OAuth2PasswordRequestForm
 
 from core.config import ACCESS_TOKEN_EXPIRE_DAY
@@ -18,7 +18,7 @@ auth_router = APIRouter(prefix='/auth', tags=['Auth'])
 
 
 @auth_router.post("/registration/", response_model=auth.Token)
-async def registration(user: users.UserCreate, db: Session = Depends(get_db)):
+async def registration(response: Response, user: users.UserCreate, db: Session = Depends(get_db)):
     db_user = security.get_user(db, user.email)
     if not db_user is None:
         raise REG_ERROR
@@ -31,12 +31,14 @@ async def registration(user: users.UserCreate, db: Session = Depends(get_db)):
     access_token = security.create_access_token(
         data={"email": user.email, "is_teacher": user.is_teacher}, expires_delta=access_token_expires
     )
+    
+    response.set_cookie(key="access_token", value=access_token)
     return {"access_token": access_token, "token_type": "bearer"}
 
 
 
 @auth_router.post("/token/", response_model=auth.Token)
-async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+async def login_for_access_token(response: Response, form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     user = security.authenticate_user(db, form_data.username, form_data.password)
     if not user:
         raise LOGIN_ERROR
@@ -45,6 +47,8 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
     access_token = security.create_access_token(
         data={"email": user.email, "is_teacher": user.is_teacher}, expires_delta=access_token_expires
     )
+    
+    response.set_cookie(key="access_token", value=access_token)
     return {"access_token": access_token, "token_type": "bearer"}
 
 
